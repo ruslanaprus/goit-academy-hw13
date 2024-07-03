@@ -2,6 +2,7 @@ package org.example;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.dto.User;
 
 import java.io.IOException;
 import java.net.URI;
@@ -11,12 +12,12 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
 
-public class UserController {
+public class UserService {
 
     private final HttpClient client;
     private final ObjectMapper objectMapper;
 
-    public UserController(HttpClient client, ObjectMapper objectMapper) {
+    public UserService(HttpClient client, ObjectMapper objectMapper) {
         this.client = client;
         this.objectMapper = objectMapper;
     }
