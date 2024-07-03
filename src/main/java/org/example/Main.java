@@ -14,7 +14,7 @@ public class Main {
     public static void main(String[] args) {
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
-        UserService userService = new UserService(client, objectMapper);
+        UserService userService = new UserService(client, objectMapper, "https://jsonplaceholder.typicode.com");
 
         User bob = createUser();
 
@@ -50,6 +50,15 @@ public class Main {
             User userByUserName = usersByUserName.get(0);
             System.out.println("User found by username:\n" + userByUserName);
         }
+
+        // Task 2: Write comments to .json
+        int userIdComments = 1;
+        userService.writeCommentsOfLastPostToFile(userIdComments);
+
+        // Task 3: Get open tasks
+        int userIdTasks = 1;
+        List<String> tasks = userService.getOpenTasksByUserId(URI.create(BASE_URL + "/" + userId + "/todos"));
+        System.out.println("tasks:\n" + tasks);
     }
 
     private static User createUser() {
