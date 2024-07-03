@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.net.http.HttpTimeoutException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -14,136 +13,88 @@ import java.util.List;
 
 public class UserController {
 
-    private static final HttpClient CLIENT = HttpClient.newHttpClient();
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private final HttpClient client;
+    private final ObjectMapper objectMapper;
 
-    public static User sendGet(URI uri) {
+    public UserController(HttpClient client, ObjectMapper objectMapper) {
+        this.client = client;
+        this.objectMapper = objectMapper;
+    }
+
+    public User getUser(URI uri) {
+        return sendRequest(uri, HttpRequest.newBuilder().GET(), User.class);
+    }
+
+    public User createUser(URI uri, User user) {
+        return sendRequest(uri, HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(serialize(user))).header("Content-type", "application/json"), User.class);
+    }
+
+    public User updateUser(URI uri, User user) {
+        return sendRequest(uri, HttpRequest.newBuilder().PUT(HttpRequest.BodyPublishers.ofString(serialize(user))).header("Content-type", "application/json"), User.class);
+    }
+
+    public int deleteUser(URI uri) {
+        return sendDeleteRequest(uri, HttpRequest.newBuilder().DELETE());
+    }
+
+    public List<User> getUsers(URI uri) {
+        return sendRequest(uri, HttpRequest.newBuilder().GET(), new TypeReference<List<User>>() {});
+    }
+
+    private <T> T sendRequest(URI uri, HttpRequest.Builder requestBuilder, Class<T> responseType) {
         try {
-            final HttpRequest request = HttpRequest.newBuilder()
+            HttpRequest request = requestBuilder
                     .uri(uri)
                     .timeout(Duration.ofSeconds(10))
-                    .GET()
                     .build();
-            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-
-            return OBJECT_MAPPER.readValue(response.body(), User.class);
-        } catch (HttpTimeoutException e) {
-            System.err.println("Request timed out: " + e.getMessage());
-        } catch (IOException e) {
-            System.err.println("IO error occurred: " + e.getMessage());
-        } catch (InterruptedException e) {
-            System.err.println("Request was interrupted: " + e.getMessage());
-            Thread.currentThread().interrupt();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return objectMapper.readValue(response.body(), responseType);
+        } catch (IOException | InterruptedException e) {
+            handleError(e);
         }
         return null;
     }
 
-    public static User sendPost(URI uri, User user) {
+    private <T> T sendRequest(URI uri, HttpRequest.Builder requestBuilder, TypeReference<T> responseType) {
         try {
-            final String requestBody = OBJECT_MAPPER.writeValueAsString(user);
-
-            HttpRequest request = HttpRequest.newBuilder()
+            HttpRequest request = requestBuilder
                     .uri(uri)
                     .timeout(Duration.ofSeconds(10))
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .header("Content-type", "application/json")
                     .build();
-
-            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-
-            return OBJECT_MAPPER.readValue(response.body(), User.class);
-        } catch (HttpTimeoutException e) {
-            System.err.println("Request timed out: " + e.getMessage());
-        } catch (IOException e) {
-            System.err.println("IO error occurred: " + e.getMessage());
-        } catch (InterruptedException e) {
-            System.err.println("Request was interrupted: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("Unexpected error: " + e.getMessage());
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return objectMapper.readValue(response.body(), responseType);
+        } catch (IOException | InterruptedException e) {
+            handleError(e);
         }
         return null;
     }
 
-    public static User sendPut(URI baseUri, int userId, User user) {
+    private int sendDeleteRequest(URI uri, HttpRequest.Builder requestBuilder) {
         try {
-            final String requestBody = OBJECT_MAPPER.writeValueAsString(user);
-
-            URI uri = URI.create(baseUri.toString() + "/" + userId);
-
-            HttpRequest request = HttpRequest.newBuilder()
+            HttpRequest request = requestBuilder
                     .uri(uri)
                     .timeout(Duration.ofSeconds(10))
-                    .PUT(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .header("Content-type", "application/json")
                     .build();
-
-            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-
-            return OBJECT_MAPPER.readValue(response.body(), User.class);
-
-        } catch (HttpTimeoutException e) {
-            System.err.println("Request timed out: " + e.getMessage());
-        } catch (IOException e) {
-            System.err.println("IO error occurred: " + e.getMessage());
-        } catch (InterruptedException e) {
-            System.err.println("Request was interrupted: " + e.getMessage());
-            Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            System.err.println("Unexpected error: " + e.getMessage());
-        }
-        return null;
-    }
-
-    public static int sendDelete(URI baseUri, int userId) {
-        try {
-            URI uri = URI.create(baseUri.toString() + "/" + userId);
-
-            final HttpRequest request = HttpRequest.newBuilder()
-                    .uri(uri)
-                    .timeout(Duration.ofSeconds(10))
-                    .header("Content-type", "application/json")
-                    .method("DELETE", HttpRequest.BodyPublishers.noBody())
-                    .build();
-
-            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
             return response.statusCode();
-
-        } catch (HttpTimeoutException e) {
-            System.err.println("Request timed out: " + e.getMessage());
-        } catch (IOException e) {
-            System.err.println("IO error occurred: " + e.getMessage());
-        } catch (InterruptedException e) {
-            System.err.println("Request was interrupted: " + e.getMessage());
-            Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            System.err.println("Unexpected error: " + e.getMessage());
+        } catch (IOException | InterruptedException e) {
+            handleError(e);
         }
         return -1;
     }
 
-    public static List<User> sendGetWithListOfResults(URI uri) {
+    private String serialize(User user) {
         try {
-            final HttpRequest request = HttpRequest.newBuilder()
-                    .uri(uri)
-                    .timeout(Duration.ofSeconds(10))
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-
-            return OBJECT_MAPPER.readValue(response.body(), new TypeReference<List<User>>() {
-            });
-
-        } catch (HttpTimeoutException e) {
-            System.err.println("Request timed out: " + e.getMessage());
+            return objectMapper.writeValueAsString(user);
         } catch (IOException e) {
-            System.err.println("IO error occurred: " + e.getMessage());
-        } catch (InterruptedException e) {
-            System.err.println("Request was interrupted: " + e.getMessage());
-            Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            System.err.println("Unexpected error: " + e.getMessage());
+            throw new RuntimeException("Failed to serialize user", e);
         }
-        return List.of();
+    }
+
+    private void handleError(Exception e) {
+        System.err.println("Error occurred: " + e.getMessage());
+        if (e instanceof InterruptedException) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
