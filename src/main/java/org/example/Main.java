@@ -9,41 +9,45 @@ import java.util.List;
 
 public class Main {
 
-    private static final String BASE_URL = "https://jsonplaceholder.typicode.com/users";
+    private static final String BASE_URL = "https://jsonplaceholder.typicode.com";
 
     public static void main(String[] args) {
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
-        UserService userService = new UserService(client, objectMapper, "https://jsonplaceholder.typicode.com");
+        HttpUtil httpUtil = new HttpUtil(client, objectMapper);
+
+        UserService userService = new UserService(httpUtil, BASE_URL);
+        PostService postService = new PostService(httpUtil, BASE_URL);
+        TaskService taskService = new TaskService(httpUtil);
 
         User bob = createUser();
 
         // Task 1.1: Create User
-        User createdUser = userService.createUser(URI.create(BASE_URL), bob);
+        User createdUser = userService.createUser(URI.create(BASE_URL + "/users"), bob);
         System.out.println("createdUser = " + createdUser);
 
         // Task 1.2: Update User
         int userIdToUpdate = 2;
-        User updatedUser = userService.updateUser(URI.create(BASE_URL + "/" + userIdToUpdate), bob);
+        User updatedUser = userService.updateUser(URI.create(BASE_URL + "/users/" + userIdToUpdate), bob);
         System.out.println("User updated successfully:\n" + updatedUser);
 
         // Task 1.3: Delete User
         int userIdToDelete = 1;
-        int statusCode = userService.deleteUser(URI.create(BASE_URL + "/" + userIdToDelete));
+        int statusCode = userService.deleteUser(URI.create(BASE_URL + "/users/" + userIdToDelete));
         System.out.println("HTTP DELETE Response Status Code: " + statusCode);
 
         // Task 1.4: Get List of Users
-        List<User> users = userService.getUsers(URI.create(BASE_URL));
+        List<User> users = userService.getUsers(URI.create(BASE_URL + "/users"));
         System.out.println("users = " + users);
 
         // Task 1.5: Get User by ID
         int userId = 1;
-        User userById = userService.getUser(URI.create(BASE_URL + "/" + userId));
+        User userById = userService.getUser(URI.create(BASE_URL + "/users/" + userId));
         System.out.println("userById:\n" + userById);
 
         // Task 1.6: Get User by Username
         String userName = "Delphine";
-        List<User> usersByUserName = userService.getUsers(URI.create(BASE_URL + "?username=" + userName));
+        List<User> usersByUserName = userService.getUsers(URI.create(BASE_URL + "/users?username=" + userName));
         if (usersByUserName.isEmpty()) {
             System.out.println("No user found with username: " + userName);
         } else {
@@ -53,11 +57,11 @@ public class Main {
 
         // Task 2: Write comments to .json
         int userIdComments = 1;
-        userService.writeCommentsOfLastPostToFile(userIdComments);
+        postService.writeCommentsOfLastPostToFile(userIdComments);
 
         // Task 3: Get open tasks
         int userIdTasks = 1;
-        List<String> tasks = userService.getOpenTasksByUserId(URI.create(BASE_URL + "/" + userId + "/todos"));
+        List<String> tasks = taskService.getOpenTasksByUserId(URI.create(BASE_URL + "/users/" + userIdTasks + "/todos"));
         System.out.println("tasks:\n" + tasks);
     }
 

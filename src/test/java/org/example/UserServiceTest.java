@@ -28,7 +28,8 @@ public class UserServiceTest {
         wireMockServer.start();
         WireMock.configureFor("localhost", 8080);
         HttpClient client = HttpClient.newHttpClient();
-        userService = new UserService(client, OBJECT_MAPPER);
+        HttpUtil httpUtil = new HttpUtil(client, OBJECT_MAPPER);
+        userService = new UserService(httpUtil, "http://localhost:8080");
     }
 
     @AfterAll

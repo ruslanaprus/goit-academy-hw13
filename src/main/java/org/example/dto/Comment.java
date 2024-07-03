@@ -26,24 +26,4 @@ public class Comment {
     public String getBody() {
         return body;
     }
-
-    public void setPostId(int postId) {
-        this.postId = postId;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setBody(String body) {
-        this.body = body;
-    }
 }
