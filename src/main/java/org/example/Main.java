@@ -2,16 +2,31 @@ package org.example;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.dto.*;
+import org.example.placeholderservice.HttpUtil;
+import org.example.placeholderservice.PostService;
+import org.example.placeholderservice.TaskService;
+import org.example.placeholderservice.UserService;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.List;
 
+/**
+ * The Main class serves as the entry point for the application, demonstrating the usage of various service classes
+ * to interact with a remote API. It performs CRUD operations on User objects, handles posts and comments,
+ * and retrieves tasks using HTTP requests.
+ */
 public class Main {
 
     private static final String BASE_URL = "https://jsonplaceholder.typicode.com";
     private static final String DIRECTORY_PATH = "src/main/resources";
 
+    /**
+     * The main method where the application starts execution. It demonstrates the use of UserService, PostService,
+     * and TaskService to perform various operations with the JSONPlaceholder API.
+     *
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -66,6 +81,11 @@ public class Main {
         System.out.println("tasks:\n" + tasks);
     }
 
+    /**
+     * Creates and returns a User object with preset attributes.
+     *
+     * @return the created User object
+     */
     private static User createUser() {
         User user = new User();
         user.setName("Bob");
