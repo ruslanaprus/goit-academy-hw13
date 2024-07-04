@@ -18,9 +18,7 @@ public class Task {
         return title;
     }
 
-
     public boolean isCompleted() {
         return completed;
     }
-
 }

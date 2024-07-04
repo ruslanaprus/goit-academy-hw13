@@ -29,7 +29,8 @@ class ApplicationTest {
     private static UserService userService;
     private static PostService postService;
     private static TaskService taskService;
-    private static final String TEST_OUTPUT_FILE = "src/main/resources/user-%d-post-%d-comments.json";
+    private static final String TEST_OUTPUT_DIR = "src/test/java/org/example/testFiles";
+
 
     @BeforeAll
     public static void setUp() {
@@ -107,24 +108,22 @@ class ApplicationTest {
     @Test
     public void testWriteCommentsOfLastPostToFile() {
         int userIdComments = 2;
-        postService.writeCommentsOfLastPostToFile(userIdComments);
+        postService.writeCommentsOfLastPostToFile(userIdComments, TEST_OUTPUT_DIR);
         System.out.println("Comments of last post for user with ID " + userIdComments + " written to file.");
     }
 
     @Test
     public void testWriteCommentsOfLastPostToFileWithContent() {
-        int userIdComments = 3;
-        postService.writeCommentsOfLastPostToFile(userIdComments);
+        int userIdComments = 5;
+        postService.writeCommentsOfLastPostToFile(userIdComments, TEST_OUTPUT_DIR);
 
         List<Post> posts = postService.getPostsByUserId(userIdComments);
         if (!posts.isEmpty()) {
             int lastPostId = posts.get(posts.size() - 1).getId();
 
-            String filePath = String.format(TEST_OUTPUT_FILE, userIdComments, lastPostId);
-            File file = new File(filePath);
-            file.getParentFile().mkdirs();
-
-            assertTrue(file.exists());
+            String expectedFilePath = String.format("%s/user-%d-post-%d-comments.json", TEST_OUTPUT_DIR, userIdComments, lastPostId);
+            File file = new File(expectedFilePath);
+            assertTrue(file.exists(), "The file should exist");
 
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 StringBuilder content = new StringBuilder();

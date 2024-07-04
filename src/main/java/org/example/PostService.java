@@ -35,7 +35,7 @@ public class PostService {
         });
     }
 
-    public void writeCommentsOfLastPostToFile(int userId) {
+    public void writeCommentsOfLastPostToFile(int userId, String directoryPath) {
         List<Post> posts = getPostsByUserId(userId);
         Optional<Post> lastPost = posts.stream()
                 .max(Comparator.comparingInt(Post::getId));
@@ -47,7 +47,7 @@ public class PostService {
             if (comments.isEmpty()) {
                 System.out.println("No comments found for the last post.");
             } else {
-                String filePath = String.format("src/main/resources/user-%d-post-%d-comments.json", userId, lastPostId);
+                String filePath = String.format("%s/user-%d-post-%d-comments.json", directoryPath, userId, lastPostId);
                 writeJsonToFile(comments, filePath);
                 System.out.println("Comments written to " + filePath);
             }

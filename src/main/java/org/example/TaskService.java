@@ -17,13 +17,14 @@ public class TaskService {
     }
 
     public List<String> getOpenTasksByUserId(URI uri) {
-        List<Task> tasks = httpUtil.sendRequest(uri, HttpRequest.newBuilder().GET(), new TypeReference<List<Task>>() {});
+        List<Task> tasks = httpUtil.sendRequest(uri, HttpRequest.newBuilder().GET(), new TypeReference<List<Task>>() {
+        });
         if (tasks != null) {
             return tasks.stream()
                     .filter(task -> !task.isCompleted())
                     .map(Task::getTitle)
                     .collect(Collectors.toList());
         }
-        return null;
+        return List.of();
     }
 }

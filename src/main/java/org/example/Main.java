@@ -10,6 +10,7 @@ import java.util.List;
 public class Main {
 
     private static final String BASE_URL = "https://jsonplaceholder.typicode.com";
+    private static final String DIRECTORY_PATH = "src/main/resources";
 
     public static void main(String[] args) {
         HttpClient client = HttpClient.newHttpClient();
@@ -56,8 +57,8 @@ public class Main {
         }
 
         // Task 2: Write comments to .json
-        int userIdComments = 1;
-        postService.writeCommentsOfLastPostToFile(userIdComments);
+        int userIdComments = 4;
+        postService.writeCommentsOfLastPostToFile(userIdComments, DIRECTORY_PATH);
 
         // Task 3: Get open tasks
         int userIdTasks = 1;
